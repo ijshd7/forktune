@@ -1,95 +1,139 @@
-import * as React from 'react';
-import { View } from 'react-native';
-import Animated, { FadeInUp, FadeOutDown, LayoutAnimationConfig } from 'react-native-reanimated';
-import { Info } from '~/lib/icons/Info';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { Button } from '~/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '~/components/ui/card';
-import { Progress } from '~/components/ui/progress';
-import { Text } from '~/components/ui/text';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import React, { useState } from 'react';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  ScrollView, 
+  ActivityIndicator,
+  Image,
+  SafeAreaView
+} from 'react-native';
 
-const GITHUB_AVATAR_URI =
-  'https://i.pinimg.com/originals/ef/a2/8d/efa28d18a04e7fa40ed49eeb0ab660db.jpg';
+export default function RecipeApp() {
+  const [recipe, setRecipe]: any = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]: any = useState(null);
 
-export default function Screen() {
-  const [progress, setProgress] = React.useState(78);
+  const fetchRandomRecipe = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('https://www.themealdb.com/api/json/v1/1/random.php');
+      const data = await response.json();
+      
+      if (data.meals && data.meals.length > 0) {
+        const mealData = data.meals[0];
+        
+        const ingredients = [];
+        for (let i = 1; i <= 20; i++) {
+          const ingredient = mealData[`strIngredient${i}`];
+          const measure = mealData[`strMeasure${i}`];
+          
+          if (ingredient && ingredient.trim() !== '') {
+            ingredients.push(`${measure ? measure.trim() : ''} ${ingredient.trim()}`);
+          }
+        }
+        
+        setRecipe({
+          id: mealData.idMeal,
+          name: mealData.strMeal,
+          category: mealData.strCategory,
+          area: mealData.strArea,
+          instructions: mealData.strInstructions,
+          image: mealData.strMealThumb,
+          ingredients: ingredients
+        });
+      }
+    } catch (err) {
+      setError('Failed to fetch recipe. Please try again.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  function updateProgressValue() {
-    setProgress(Math.floor(Math.random() * 100));
-  }
   return (
-    <View className='flex-1 justify-center items-center gap-5 p-6 bg-secondary/30'>
-      <Card className='w-full max-w-sm p-6 rounded-2xl'>
-        <CardHeader className='items-center'>
-          <Avatar alt="Rick Sanchez's Avatar" className='w-24 h-24'>
-            <AvatarImage source={{ uri: GITHUB_AVATAR_URI }} />
-            <AvatarFallback>
-              <Text>RS</Text>
-            </AvatarFallback>
-          </Avatar>
-          <View className='p-3' />
-          <CardTitle className='pb-2 text-center'>Rick Sanchez</CardTitle>
-          <View className='flex-row'>
-            <CardDescription className='text-base font-semibold'>Scientist</CardDescription>
-            <Tooltip delayDuration={150}>
-              <TooltipTrigger className='px-2 pb-0.5 active:opacity-50'>
-                <Info size={14} strokeWidth={2.5} className='w-4 h-4 text-foreground/70' />
-              </TooltipTrigger>
-              <TooltipContent className='py-2 px-4 shadow'>
-                <Text className='native:text-lg'>Freelance</Text>
-              </TooltipContent>
-            </Tooltip>
-          </View>
-        </CardHeader>
-        <CardContent>
-          <View className='flex-row justify-around gap-3'>
-            <View className='items-center'>
-              <Text className='text-sm text-muted-foreground'>Dimension</Text>
-              <Text className='text-xl font-semibold'>C-137</Text>
-            </View>
-            <View className='items-center'>
-              <Text className='text-sm text-muted-foreground'>Age</Text>
-              <Text className='text-xl font-semibold'>70</Text>
-            </View>
-            <View className='items-center'>
-              <Text className='text-sm text-muted-foreground'>Species</Text>
-              <Text className='text-xl font-semibold'>Human</Text>
-            </View>
-          </View>
-        </CardContent>
-        <CardFooter className='flex-col gap-3 pb-0'>
-          <View className='flex-row items-center overflow-hidden'>
-            <Text className='text-sm text-muted-foreground'>Productivity:</Text>
-            <LayoutAnimationConfig skipEntering>
-              <Animated.View
-                key={progress}
-                entering={FadeInUp}
-                exiting={FadeOutDown}
-                className='w-11 items-center'
+    <SafeAreaView className="flex-1 bg-white">
+      {/* Header */}
+      <View className="p-5 bg-rose-600 shadow-md shadow-rose-400">
+        <Text className="text-3xl font-bold text-white text-center tracking-wide">
+          🍽️ Forktune
+        </Text>
+      </View>
+
+      {/* Action Button */}
+      <View className="px-6 py-4">
+        <TouchableOpacity
+          className={`bg-rose-500 p-4 rounded-xl items-center shadow-md ${
+            loading ? 'opacity-70' : ''
+          }`}
+          onPress={fetchRandomRecipe}
+          disabled={loading}
+        >
+          <Text className="text-white text-lg font-semibold">
+            {loading ? 'Searching...' : 'Get Random Recipe'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Loading Indicator */}
+      {loading && (
+        <View className="items-center mt-10">
+          <ActivityIndicator size="large" color="#f43f5e" />
+          <Text className="mt-3 text-base text-gray-500">Looking for something tasty...</Text>
+        </View>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <View className="mx-6 my-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <Text className="text-red-700 text-sm">{error}</Text>
+        </View>
+      )}
+
+      {/* Recipe Display */}
+      {recipe && !loading && (
+        <ScrollView className="flex-1 px-6 py-4" contentContainerStyle={{ paddingBottom: 40 }}>
+          {/* Title & Meta */}
+          <Text className="text-2xl font-bold text-gray-800">{recipe.name}</Text>
+          <Text className="text-sm text-gray-500 mb-4">{recipe.category} • {recipe.area}</Text>
+
+          {/* Image */}
+          {recipe.image && (
+            <Image
+              source={{ uri: recipe.image }}
+              className="w-full h-56 rounded-xl mb-5"
+              resizeMode="cover"
+            />
+          )}
+
+          {/* Ingredients */}
+          <View className="mb-6">
+            <Text className="text-xl font-semibold text-gray-800 border-b pb-2 border-gray-200 mb-3">
+              🥕 Ingredients
+            </Text>
+            {recipe.ingredients.map((ingredient: string, index: number) => (
+              <Text
+                key={index}
+                className="text-base text-gray-700 mb-1"
               >
-                <Text className='text-sm font-bold text-sky-600'>{progress}%</Text>
-              </Animated.View>
-            </LayoutAnimationConfig>
+                • {ingredient}
+              </Text>
+            ))}
           </View>
-          <Progress value={progress} className='h-2' indicatorClassName='bg-sky-600' />
-          <View />
-          <Button
-            variant='outline'
-            className='shadow shadow-foreground/5'
-            onPress={updateProgressValue}
-          >
-            <Text>Update</Text>
-          </Button>
-        </CardFooter>
-      </Card>
-    </View>
+
+          {/* Instructions */}
+          <View>
+            <Text className="text-xl font-semibold text-gray-800 border-b pb-2 border-gray-200 mb-3">
+              📖 Instructions
+            </Text>
+            <Text className="text-base text-gray-700 leading-relaxed">
+              {recipe.instructions}
+            </Text>
+          </View>
+        </ScrollView>
+      )}
+    </SafeAreaView>
   );
 }
