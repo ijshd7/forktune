@@ -1,21 +1,12 @@
 import React, { useState } from 'react';
 import { 
   View,
-  TouchableOpacity, 
   ScrollView, 
   ActivityIndicator,
   Image,
   SafeAreaView
 } from 'react-native';
 import { Button } from '~/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '~/components/ui/card';
 import { Text } from '~/components/ui/text';
 
 export default function RecipeApp() {
@@ -64,7 +55,6 @@ export default function RecipeApp() {
 
   return (
     <SafeAreaView className="flex-1 bg-secondary">
-
       <View className="px-6 py-4">
         <Button
           variant="outline"
