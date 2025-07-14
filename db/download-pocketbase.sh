@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PB_VERSION=${1:-0.28.2}
+PB_VERSION=${1:-0.28.4}
 
 OS=$(uname | tr '[:upper:]' '[:lower:]')
 ARCH=$(uname -m)
