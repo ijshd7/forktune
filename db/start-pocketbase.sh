@@ -17,6 +17,15 @@ PB_PORT=${PB_PORT:-8090}
 echo "🛠️  Upserting superuser via CLI..."
 ./pocketbase superuser upsert "$PB_SUPERUSER_EMAIL" "$PB_SUPERUSER_PASSWORD"
 
+# Build the serve command
+SERVE_CMD="./pocketbase serve --http=\"0.0.0.0:$PB_PORT\""
+
+# Add encryption key if present
+if [[ -n "$PB_ENCRYPTION_KEY" ]]; then
+  echo "🔐 Serving with database encryption enabled."
+  SERVE_CMD="$SERVE_CMD --encryptionEnv=\"$PB_ENCRYPTION_KEY\""
+fi
+
 # Now start the server
 echo "🚀 Starting PocketBase on port $PB_PORT..."
-./pocketbase serve --http="0.0.0.0:$PB_PORT"
+eval $SERVE_CMD
