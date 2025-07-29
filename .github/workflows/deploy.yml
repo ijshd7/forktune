@@ -1,0 +1,57 @@
+name: Forktune Deployment
+
+on:
+  push:
+    paths:
+      - 'ui/**'
+      - 'db/**'
+  pull_request:
+    paths:
+      - 'ui/**'
+      - 'db/**'
+
+jobs:
+  detect-changes:
+    name: Detect Changed Projects
+    runs-on: ubuntu-latest
+    outputs:
+      ui_changed: ${{ steps.filter.outputs.ui }}
+      db_changed: ${{ steps.filter.outputs.db }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Filter changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            ui:
+              - 'ui/**'
+            db:
+              - 'db/**'
+
+  deploy-ui:
+    name: Deploy UI
+    needs: detect-changes
+    if: needs.detect-changes.outputs.ui_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy UI
+        run: |
+          echo "Deploying UI..."
+          # Insert your UI deployment script/command here
+
+  deploy-db:
+    name: Deploy DB
+    needs: detect-changes
+    if: needs.detect-changes.outputs.db_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy DB
+        run: |
+          echo "Deploying DB..."
+          # Insert your DB deployment script/command here
