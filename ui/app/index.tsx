@@ -3,11 +3,12 @@ import {
   View,
   ScrollView, 
   ActivityIndicator,
-  Image,
   SafeAreaView
 } from 'react-native';
 import { Button } from '~/components/ui/button';
 import { Text } from '~/components/ui/text';
+import { AspectRatio } from '~/components/ui/aspect-ratio';
+import { Image } from 'expo-image';
 
 export default function RecipeApp() {
   const [recipe, setRecipe]: any = useState(null);
@@ -86,11 +87,15 @@ export default function RecipeApp() {
           <Text className="text-sm text-primary mb-4">{recipe.category} • {recipe.area}</Text>
 
           {recipe.image && (
-            <Image
-              source={{ uri: recipe.image }}
-              className="w-full h-56 rounded-xl mb-5"
-              resizeMode="cover"
-            />
+            <AspectRatio ratio={1 / 1} className="w-full h-56 mb-5">
+              <Image
+                source={{ uri: recipe.image }}
+                style={{ width: '100%', height: '100%' }}
+                contentFit="contain"
+                placeholderContentFit="contain"
+                transition={1000}
+              />
+            </AspectRatio>
           )}
 
           <View className="mb-6">
